@@ -23,6 +23,13 @@ const MODES = [
   { label: "4자리", digits: 4, tries: 12 },
 ];
 
+// 숫자 상태: null = 미확인, "in" = 포함, "out" = 제외
+const initDigitState = () => {
+  const s = {};
+  for (let i = 0; i <= 9; i++) s[i] = null;
+  return s;
+};
+
 export default function BaseballGame() {
   const [modeIdx, setModeIdx] = useState(0);
   const mode = MODES[modeIdx];
@@ -33,6 +40,7 @@ export default function BaseballGame() {
   const [gameOver, setGameOver] = useState(false);
   const [shake, setShake] = useState(false);
   const [flashRow, setFlashRow] = useState(null);
+  const [digitState, setDigitState] = useState(initDigitState);
   const inputRef = useRef(null);
   const historyRef = useRef(null);
 
@@ -53,6 +61,7 @@ export default function BaseballGame() {
     setHistory([]);
     setInput("");
     setGameOver(false);
+    setDigitState(initDigitState());
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
@@ -96,7 +105,17 @@ export default function BaseballGame() {
     setHistory([]);
     setInput("");
     setGameOver(false);
+    setDigitState(initDigitState());
     setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  // 숫자 탭: null → "in" → "out" → null 순환
+  const cycleDigit = (d) => {
+    setDigitState(prev => {
+      const cur = prev[d];
+      const next = cur === null ? "in" : cur === "in" ? "out" : null;
+      return { ...prev, [d]: next };
+    });
   };
 
   const won = history.some(h => h.won);
@@ -155,6 +174,8 @@ export default function BaseballGame() {
         overflow: "hidden",
         boxShadow: "0 0 60px rgba(0,255,120,0.05), 0 20px 60px rgba(0,0,0,0.8)",
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
       }}>
         {/* Scanline */}
         <div style={{
@@ -165,78 +186,112 @@ export default function BaseballGame() {
 
         {/* Header */}
         <div style={{
-          padding: "20px 24px 16px",
+          padding: "14px 20px 12px",
           borderBottom: "1px solid #1a1a28",
           background: "linear-gradient(180deg, #111120 0%, #0e0e16 100%)",
+          flexShrink: 0,
         }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"4px" }}>
-            <div style={{ width:"8px",height:"8px",borderRadius:"50%",background:"#00ff78",boxShadow:"0 0 8px #00ff78" }}/>
-            <span style={{ color:"#00ff78", fontSize:"11px", letterSpacing:"4px", textTransform:"uppercase" }}>
+            <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:"#00ff78",boxShadow:"0 0 8px #00ff78" }}/>
+            <span style={{ color:"#00ff78", fontSize:"10px", letterSpacing:"4px", textTransform:"uppercase" }}>
               BASEBALL.EXE
             </span>
           </div>
-
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:"12px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:"8px" }}>
             <div>
-              <div style={{ color:"#ffffff", fontSize:"22px", fontWeight:"bold", letterSpacing:"2px" }}>
+              <div style={{ color:"#ffffff", fontSize:"20px", fontWeight:"bold", letterSpacing:"2px" }}>
                 숫자 야구
               </div>
-              {/* Mode selector */}
-              <div style={{ display:"flex", gap:"6px", marginTop:"8px", alignItems:"center" }}>
+              <div style={{ display:"flex", gap:"6px", marginTop:"6px", alignItems:"center" }}>
                 {MODES.map((m, i) => (
-                  <button
-                    key={m.label}
-                    onClick={() => startNewGame(i)}
-                    style={{
-                      background: modeIdx === i ? "#00ff78" : "transparent",
-                      border: `1px solid ${modeIdx === i ? "#00ff78" : "#2a2a3e"}`,
-                      borderRadius: "3px",
-                      color: modeIdx === i ? "#000" : "#666",
-                      fontFamily: "'Courier New', monospace",
-                      fontWeight: "bold",
-                      fontSize: "10px",
-                      letterSpacing: "2px",
-                      padding: "4px 12px",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {m.label}
-                  </button>
+                  <button key={m.label} onClick={() => startNewGame(i)} style={{
+                    background: modeIdx === i ? "#00ff78" : "transparent",
+                    border: `1px solid ${modeIdx === i ? "#00ff78" : "#2a2a3e"}`,
+                    borderRadius: "3px",
+                    color: modeIdx === i ? "#000" : "#666",
+                    fontFamily: "'Courier New', monospace",
+                    fontWeight: "bold",
+                    fontSize: "10px",
+                    letterSpacing: "2px",
+                    padding: "3px 10px",
+                    cursor: "pointer",
+                  }}>{m.label}</button>
                 ))}
-                <span style={{ color:"#555", fontSize:"10px", marginLeft:"4px" }}>
-                  기회 {mode.tries}번
-                </span>
+                <span style={{ color:"#444", fontSize:"10px", marginLeft:"4px" }}>기회 {mode.tries}번</span>
               </div>
             </div>
-
             <div style={{
-              background:"#111",
-              border:"1px solid #1e1e2e",
-              borderRadius:"3px",
-              padding:"6px 14px",
-              textAlign:"center",
-              minWidth:"60px",
+              background:"#111", border:"1px solid #1e1e2e", borderRadius:"3px",
+              padding:"5px 12px", textAlign:"center", minWidth:"54px",
             }}>
               <div style={{ color:"#999", fontSize:"9px", letterSpacing:"2px" }}>TRIES LEFT</div>
               <div style={{
                 color: remaining <= 3 ? "#ff4455" : "#00ff78",
-                fontSize:"22px",
-                fontWeight:"bold",
-                lineHeight:1,
-                marginTop:"2px",
+                fontSize:"20px", fontWeight:"bold", lineHeight:1, marginTop:"2px",
               }}>{gameOver ? (won ? "✓" : "✗") : remaining}</div>
             </div>
           </div>
         </div>
 
+        {/* 숫자 메모판 */}
+        <div style={{
+          padding:"10px 20px",
+          background:"#080810",
+          borderBottom:"1px solid #1a1a28",
+          flexShrink: 0,
+        }}>
+          <div style={{ color:"#888", fontSize:"9px", letterSpacing:"2px", marginBottom:"6px" }}>
+            NUMBER MEMO
+          </div>
+          <div style={{ display:"flex", gap:"5px" }}>
+            {[0,1,2,3,4,5,6,7,8,9].map(d => {
+              const st = digitState[d];
+              const bg = st === "in" ? "#00ff78" : st === "out" ? "#1a1a1a" : "#111";
+              const color = st === "in" ? "#000" : st === "out" ? "#444" : "#aaa";
+              const border = st === "in" ? "#00ff78" : st === "out" ? "#2a2a2a" : "#2a2a3e";
+              const decoration = st === "out" ? "line-through" : "none";
+              return (
+                <button
+                  key={d}
+                  onClick={() => cycleDigit(d)}
+                  style={{
+                    flex: 1,
+                    background: bg,
+                    border: `1px solid ${border}`,
+                    borderRadius: "3px",
+                    color,
+                    fontFamily: "'Courier New', monospace",
+                    fontWeight: "bold",
+                    fontSize: "13px",
+                    padding: "5px 0",
+                    cursor: "pointer",
+                    textDecoration: decoration,
+                    transition: "all 0.15s",
+                    boxShadow: st === "in" ? "0 0 8px #00ff7866" : "none",
+                  }}
+                >{d}</button>
+              );
+            })}
+          </div>
+          <div style={{ display:"flex", gap:"10px", marginTop:"6px", alignItems:"center" }}>
+            <span style={{ color:"#666", fontSize:"9px" }}>탭 횟수:</span>
+            <span style={{ color:"#aaa", fontSize:"9px" }}>1번 →</span>
+            <span style={{ color:"#00ff78", fontSize:"9px", fontWeight:"bold" }}>● 포함</span>
+            <span style={{ color:"#aaa", fontSize:"9px" }}>2번 →</span>
+            <span style={{ color:"#555", fontSize:"9px", textDecoration:"line-through" }}>● 제외</span>
+            <span style={{ color:"#aaa", fontSize:"9px" }}>3번 →</span>
+            <span style={{ color:"#777", fontSize:"9px" }}>● 초기화</span>
+          </div>
+        </div>
+
         {/* Rules */}
         <div style={{
-          padding:"10px 24px",
+          padding:"8px 20px",
           background:"#080810",
           borderBottom:"1px solid #1a1a28",
           display:"flex",
-          gap:"20px",
+          gap:"16px",
+          flexShrink: 0,
         }}>
           {[
             { icon:"⚾", label:"스트라이크", desc:"자리·숫자 일치" },
@@ -245,62 +300,43 @@ export default function BaseballGame() {
           ].map(r => (
             <div key={r.label} style={{ flex:1 }}>
               <div style={{ color:"#aaa", fontSize:"9px", letterSpacing:"1px" }}>{r.icon} {r.label}</div>
-              <div style={{ color:"#777", fontSize:"9px", marginTop:"1px" }}>{r.desc}</div>
+              <div style={{ color:"#666", fontSize:"9px", marginTop:"1px" }}>{r.desc}</div>
             </div>
           ))}
         </div>
 
         {/* History */}
-        <div
-          ref={historyRef}
-          style={{
-            height:"260px",
-            overflowY:"auto",
-            padding:"12px 24px",
-            display:"flex",
-            flexDirection:"column",
-            gap:"4px",
-          }}
-        >
+        <div ref={historyRef} style={{
+          flex: 1,
+          overflowY:"auto",
+          padding:"10px 20px",
+          display:"flex",
+          flexDirection:"column",
+          gap:"4px",
+          minHeight: 0,
+        }}>
           {history.length === 0 && (
             <div style={{
-              display:"flex",
-              alignItems:"center",
-              justifyContent:"center",
-              height:"100%",
-              color:"#2a2a3a",
-              fontSize:"12px",
-              letterSpacing:"3px",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              height:"100%", color:"#2a2a3a", fontSize:"12px", letterSpacing:"3px",
             }}>
               {placeholder} · · ·
             </div>
           )}
           {history.map((h, i) => (
-            <div
-              key={i}
-              className={flashRow === h.try ? "row-flash" : ""}
-              style={{
-                display:"flex",
-                alignItems:"center",
-                justifyContent:"space-between",
-                padding:"7px 10px",
-                borderRadius:"3px",
-                border:"1px solid",
-                borderColor: h.won ? "#00ff7840" : h.out ? "#ff445520" : "#1e1e2e",
-                background: h.won ? "#00ff7808" : "transparent",
-                animation: "fadeSlideIn 0.3s ease",
-              }}
-            >
+            <div key={i} className={flashRow === h.try ? "row-flash" : ""} style={{
+              display:"flex", alignItems:"center", justifyContent:"space-between",
+              padding:"6px 10px", borderRadius:"3px", border:"1px solid",
+              borderColor: h.won ? "#00ff7840" : h.out ? "#ff445520" : "#1e1e2e",
+              background: h.won ? "#00ff7808" : "transparent",
+              animation: "fadeSlideIn 0.3s ease",
+            }}>
               <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                 <span style={{ color:"#777", fontSize:"10px", width:"18px" }}>#{h.try}</span>
                 <span style={{
-                  color:"#ccc",
-                  fontSize: mode.digits === 4 ? "16px" : "18px",
-                  letterSpacing:"5px",
-                  fontWeight:"bold"
-                }}>
-                  {h.guess}
-                </span>
+                  color:"#ccc", fontSize: mode.digits === 4 ? "15px" : "17px",
+                  letterSpacing:"5px", fontWeight:"bold"
+                }}>{h.guess}</span>
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
                 {h.won ? (
@@ -312,10 +348,7 @@ export default function BaseballGame() {
                     {h.strikes > 0 && (
                       <div style={{ display:"flex", alignItems:"center", gap:"3px" }}>
                         {Array(h.strikes).fill(0).map((_,j)=>(
-                          <div key={j} style={{
-                            width:"9px",height:"9px",borderRadius:"50%",
-                            background:"#00ff78",boxShadow:"0 0 6px #00ff78"
-                          }}/>
+                          <div key={j} style={{ width:"8px",height:"8px",borderRadius:"50%",background:"#00ff78",boxShadow:"0 0 5px #00ff78" }}/>
                         ))}
                         <span style={{color:"#00ff78",fontSize:"10px",marginLeft:"2px"}}>S</span>
                       </div>
@@ -323,10 +356,7 @@ export default function BaseballGame() {
                     {h.balls > 0 && (
                       <div style={{ display:"flex", alignItems:"center", gap:"3px" }}>
                         {Array(h.balls).fill(0).map((_,j)=>(
-                          <div key={j} style={{
-                            width:"9px",height:"9px",borderRadius:"50%",
-                            background:"#ffcc00",boxShadow:"0 0 6px #ffcc0066"
-                          }}/>
+                          <div key={j} style={{ width:"8px",height:"8px",borderRadius:"50%",background:"#ffcc00",boxShadow:"0 0 5px #ffcc0066" }}/>
                         ))}
                         <span style={{color:"#ffcc00",fontSize:"10px",marginLeft:"2px"}}>B</span>
                       </div>
@@ -340,9 +370,10 @@ export default function BaseballGame() {
 
         {/* Input area */}
         <div style={{
-          padding:"16px 24px 20px",
+          padding:"12px 20px 16px",
           borderTop:"1px solid #1a1a28",
           background:"#080810",
+          flexShrink: 0,
         }}>
           {!gameOver ? (
             <div style={{ display:"flex", gap:"8px" }}>
@@ -355,103 +386,52 @@ export default function BaseballGame() {
                 placeholder={placeholder}
                 className={shake ? "shake-input" : ""}
                 style={{
-                  flex:1,
-                  background:"#0a0a12",
-                  border:"1px solid #2a2a3e",
-                  borderRadius:"3px",
-                  color:"#00ff78",
-                  fontSize,
-                  fontWeight:"bold",
-                  letterSpacing,
-                  textAlign:"center",
-                  padding:"10px 0",
-                  fontFamily:"'Courier New', monospace",
-                  caretColor:"#00ff78",
-                  transition:"border-color 0.2s",
+                  flex:1, background:"#0a0a12", border:"1px solid #2a2a3e",
+                  borderRadius:"3px", color:"#00ff78", fontSize, fontWeight:"bold",
+                  letterSpacing, textAlign:"center", padding:"9px 0",
+                  fontFamily:"'Courier New', monospace", caretColor:"#00ff78",
                 }}
               />
-              <button
-                onClick={handleSubmit}
-                style={{
-                  background:"#00ff78",
-                  border:"none",
-                  borderRadius:"3px",
-                  color:"#000",
-                  fontFamily:"'Courier New', monospace",
-                  fontWeight:"bold",
-                  fontSize:"12px",
-                  letterSpacing:"2px",
-                  padding:"0 20px",
-                  cursor:"pointer",
-                  transition:"opacity 0.15s, transform 0.1s",
-                }}
-                onMouseEnter={e=>e.target.style.opacity="0.85"}
-                onMouseLeave={e=>e.target.style.opacity="1"}
+              <button onClick={handleSubmit} style={{
+                background:"#00ff78", border:"none", borderRadius:"3px",
+                color:"#000", fontFamily:"'Courier New', monospace", fontWeight:"bold",
+                fontSize:"12px", letterSpacing:"2px", padding:"0 18px", cursor:"pointer",
+              }}
                 onMouseDown={e=>e.target.style.transform="scale(0.97)"}
                 onMouseUp={e=>e.target.style.transform="scale(1)"}
-              >
-                PITCH
-              </button>
+              >PITCH</button>
             </div>
           ) : (
             <div style={{ textAlign:"center" }}>
               {won ? (
-                <div style={{ marginBottom:"14px" }}>
+                <div style={{ marginBottom:"12px" }}>
                   <div className="win-glow" style={{
-                    color:"#00ff78",
-                    fontSize:"15px",
-                    fontWeight:"bold",
-                    letterSpacing:"4px",
-                    padding:"10px",
-                    border:"1px solid #00ff7840",
-                    borderRadius:"3px",
-                    marginBottom:"6px",
-                  }}>
-                    ⚾ HOME RUN!
-                  </div>
+                    color:"#00ff78", fontSize:"14px", fontWeight:"bold", letterSpacing:"4px",
+                    padding:"8px", border:"1px solid #00ff7840", borderRadius:"3px", marginBottom:"5px",
+                  }}>⚾ HOME RUN!</div>
                   <div style={{ color:"#aaa", fontSize:"11px", letterSpacing:"2px" }}>
-                    {history.length}번 만에{" "}
-                    <span style={{color:"#00ff78",letterSpacing:"5px"}}>{secret}</span> 정답!
+                    {history.length}번 만에 <span style={{color:"#00ff78",letterSpacing:"5px"}}>{secret}</span> 정답!
                   </div>
                 </div>
               ) : (
-                <div style={{ marginBottom:"14px" }}>
-                  <div style={{
-                    color:"#ff4455",
-                    fontSize:"14px",
-                    fontWeight:"bold",
-                    letterSpacing:"3px",
-                    marginBottom:"8px",
-                  }}>GAME OVER</div>
-                  <div style={{ color:"#aaa", fontSize:"11px", letterSpacing:"1px" }}>
-                    정답은{" "}
-                    <span style={{color:"#fff",letterSpacing:"5px",fontSize:"18px"}}>{secret}</span>
-                    {" "}이었습니다
+                <div style={{ marginBottom:"12px" }}>
+                  <div style={{ color:"#ff4455", fontSize:"14px", fontWeight:"bold", letterSpacing:"3px", marginBottom:"6px" }}>GAME OVER</div>
+                  <div style={{ color:"#aaa", fontSize:"11px" }}>
+                    정답은 <span style={{color:"#fff",letterSpacing:"5px",fontSize:"16px"}}>{secret}</span> 이었습니다
                   </div>
                 </div>
               )}
-              <button
-                onClick={handleReset}
-                style={{
-                  background:"transparent",
-                  border:"1px solid #2a2a3e",
-                  borderRadius:"3px",
-                  color:"#888",
-                  fontFamily:"'Courier New', monospace",
-                  fontSize:"11px",
-                  letterSpacing:"3px",
-                  padding:"8px 24px",
-                  cursor:"pointer",
-                  transition:"all 0.2s",
-                }}
+              <button onClick={handleReset} style={{
+                background:"transparent", border:"1px solid #2a2a3e", borderRadius:"3px",
+                color:"#888", fontFamily:"'Courier New', monospace", fontSize:"11px",
+                letterSpacing:"3px", padding:"7px 22px", cursor:"pointer",
+              }}
                 onMouseEnter={e=>{e.target.style.borderColor="#555";e.target.style.color="#ccc"}}
                 onMouseLeave={e=>{e.target.style.borderColor="#2a2a3e";e.target.style.color="#888"}}
-              >
-                NEW GAME
-              </button>
+              >NEW GAME</button>
             </div>
           )}
-          <div style={{ color:"#555", fontSize:"9px", textAlign:"center", marginTop:"10px", letterSpacing:"2px" }}>
+          <div style={{ color:"#666", fontSize:"9px", textAlign:"center", marginTop:"8px", letterSpacing:"2px" }}>
             서로 다른 숫자 {mode.digits}자리 · 첫째 자리 0 불가 · {mode.tries}번 이내
           </div>
         </div>
