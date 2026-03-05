@@ -107,13 +107,14 @@ export default function BaseballGame() {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      position: "fixed",
+      inset: 0,
       background: "#0a0a0f",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       fontFamily: "'Courier New', Courier, monospace",
-      padding: "20px",
+      overflow: "hidden",
     }}>
       <style>{`
         @keyframes fadeSlideIn {
@@ -147,6 +148,7 @@ export default function BaseballGame() {
       <div style={{
         width: "100%",
         maxWidth: "440px",
+        maxHeight: "100vh",
         background: "#0e0e16",
         border: "1px solid #1e1e2e",
         borderRadius: "4px",
