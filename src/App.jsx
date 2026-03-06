@@ -318,24 +318,46 @@ function SetSecretScreen({ T, mode, input, setInput, shake, show, setShow, error
             {mode.digits}자리 숫자 입력 (서로 다른 숫자, 첫째 자리 0 불가)
           </div>
           <div style={{position:"relative"}}>
+            {/* 실제 입력 input (항상 존재, show 아닐 때는 투명하게 위에 덮음) */}
             <input
               ref={inputRef}
-              value={show ? input : input.replace(/./g,"●")}
+              value={input}
               onChange={handleInput}
               onKeyDown={handleKey}
               maxLength={mode.digits}
-              placeholder={Array(mode.digits).fill("_").join(" ")}
+              placeholder={show ? Array(mode.digits).fill("_").join(" ") : ""}
               className={shake?"shake-it":""}
               style={{
                 width:"100%", boxSizing:"border-box",
+                background: show ? T.inputBg : "transparent",
+                border:`1px solid ${error?"#ff4455":T.inputBorder}`,
+                borderRadius:"3px",
+                color: show ? "#c8960a" : "transparent",
+                caretColor: show ? "#c8960a" : "transparent",
+                fontSize:"26px", fontWeight:"bold",
+                letterSpacing:"12px", textAlign:"center",
+                padding:"10px 40px 10px 12px",
+                fontFamily:"'Courier New',monospace",
+                position: show ? "relative" : "absolute",
+                inset: show ? "auto" : 0,
+                zIndex: show ? 1 : 2,
+              }}
+            />
+            {/* 숨김 표시용 */}
+            {!show && (
+              <div style={{
                 background:T.inputBg, border:`1px solid ${error?"#ff4455":T.inputBorder}`,
                 borderRadius:"3px", color:"#c8960a",
                 fontSize:"26px", fontWeight:"bold",
                 letterSpacing:"12px", textAlign:"center",
                 padding:"10px 40px 10px 12px",
-                fontFamily:"'Courier New',monospace", caretColor:"#c8960a",
-              }}
-            />
+                fontFamily:"'Courier New',monospace",
+                minHeight:"54px", display:"flex", alignItems:"center", justifyContent:"center",
+                userSelect:"none",
+              }}>
+                {input.length > 0 ? "●".repeat(input.length) : <span style={{color:T.textFaint,fontSize:"16px"}}>{Array(mode.digits).fill("_").join(" ")}</span>}
+              </div>
+            )}
             <button onClick={() => setShow(s=>!s)} style={{
               position:"absolute", right:"10px", top:"50%", transform:"translateY(-50%)",
               background:"transparent", border:"none", color:T.textMute,
@@ -448,8 +470,8 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
   return (
     <div style={{
       position:"fixed", inset:0, background:T.bg,
-      display:"flex", alignItems:"center", justifyContent:"center",
-      fontFamily:"'Courier New',Courier,monospace", overflow:"hidden",
+      overflowY:"auto", overflowX:"hidden",
+      fontFamily:"'Courier New',Courier,monospace",
       transition:"background 0.3s",
       paddingTop:"env(safe-area-inset-top)",
       paddingBottom:"env(safe-area-inset-bottom)",
@@ -472,19 +494,11 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
       `}</style>
 
       <div style={{
-        width:"100%", maxWidth:"440px", height:"100vh",
-        background:T.card, border:`1px solid ${T.border}`,
-        overflow:"hidden", position:"relative",
-        display:"flex", flexDirection:"column",
+        width:"100%", maxWidth:"440px", margin:"0 auto",
+        background:T.card, minHeight:"100vh",
         boxShadow:`0 0 60px ${T.shadow}`,
-        transition:"background 0.3s, border-color 0.3s",
+        transition:"background 0.3s",
       }}>
-        {/* Scanline (다크만) */}
-        <div style={{
-          position:"absolute",inset:0,pointerEvents:"none",zIndex:10,
-          background:`repeating-linear-gradient(0deg,transparent,transparent 2px,${T.scanline} 2px,${T.scanline} 4px)`,
-        }}/>
-
         {/* Header */}
         <div style={{
           padding:"10px 14px 8px", borderBottom:`1px solid ${T.borderSub}`,
@@ -580,9 +594,9 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
         </div>
 
         {/* History */}
-        <div ref={historyRef} style={{flex:1,overflowY:"auto",padding:"8px 14px",display:"flex",flexDirection:"column",gap:"3px",minHeight:0}}>
+        <div ref={historyRef} style={{padding:"8px 14px",display:"flex",flexDirection:"column",gap:"3px",minHeight:"80px"}}>
           {history.length===0&&(
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",color:T.textFaint,fontSize:"12px",letterSpacing:"3px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 0",color:T.textFaint,fontSize:"12px",letterSpacing:"3px"}}>
               {placeholder} · · ·
             </div>
           )}
