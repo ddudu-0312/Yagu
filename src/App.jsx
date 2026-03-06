@@ -121,7 +121,7 @@ function HomeScreen({ onSolo, onDuo, modeIdx, setModeIdx, hardMode, setHardMode 
   return (
     <div style={{
       position:"fixed", inset:0, background:"#0a0a0f",
-      overflowY:"auto",
+      overflowY:"auto", overflowX:"hidden",
       fontFamily:"'Courier New',Courier,monospace",
     }}>
       <style>{`
@@ -129,21 +129,21 @@ function HomeScreen({ onSolo, onDuo, modeIdx, setModeIdx, hardMode, setHardMode 
         button:active{transform:scale(0.96)}
         input:focus{outline:none}
       `}</style>
-      <div style={{width:"100%",maxWidth:"380px",padding:"24px 20px 40px",margin:"0 auto"}}>
+      <div style={{width:"100%",maxWidth:"380px",padding:"16px 20px 32px",margin:"0 auto"}}>
         {/* 로고 */}
-        <div style={{textAlign:"center",marginBottom:"40px"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"8px",marginBottom:"6px"}}>
-            <div style={{width:"8px",height:"8px",borderRadius:"50%",background:"#00ff78",boxShadow:"0 0 10px #00ff78",animation:"pulse 2s infinite"}}/>
-            <span style={{color:"#00ff78",fontSize:"11px",letterSpacing:"5px"}}>BASEBALL.EXE</span>
+        <div style={{textAlign:"center",marginBottom:"16px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"8px",marginBottom:"4px"}}>
+            <div style={{width:"7px",height:"7px",borderRadius:"50%",background:"#00ff78",boxShadow:"0 0 10px #00ff78",animation:"pulse 2s infinite"}}/>
+            <span style={{color:"#00ff78",fontSize:"10px",letterSpacing:"4px"}}>BASEBALL.EXE</span>
           </div>
-          <div style={{color:"#fff",fontSize:"32px",fontWeight:"bold",letterSpacing:"4px"}}>숫자 야구</div>
-          <div style={{color:"#888",fontSize:"11px",marginTop:"6px",letterSpacing:"2px"}}>NUMBER BASEBALL GAME</div>
+          <div style={{color:"#fff",fontSize:"24px",fontWeight:"bold",letterSpacing:"4px"}}>숫자 야구</div>
+          <div style={{color:"#888",fontSize:"10px",marginTop:"4px",letterSpacing:"2px"}}>NUMBER BASEBALL GAME</div>
         </div>
 
         {/* 모드 설정 */}
-        <div style={{marginBottom:"24px",background:"#0e0e16",border:"1px solid #1e1e2e",borderRadius:"6px",padding:"16px"}}>
-          <div style={{color:"#999",fontSize:"9px",letterSpacing:"3px",marginBottom:"10px"}}>SETTINGS</div>
-          <div style={{display:"flex",gap:"6px",marginBottom:"10px"}}>
+        <div style={{marginBottom:"12px",background:"#0e0e16",border:"1px solid #1e1e2e",borderRadius:"6px",padding:"12px"}}>
+          <div style={{color:"#999",fontSize:"9px",letterSpacing:"3px",marginBottom:"8px"}}>SETTINGS</div>
+          <div style={{display:"flex",gap:"6px",marginBottom:"8px"}}>
             {MODES.map((m,i) => (
               <button key={m.label} onClick={() => setModeIdx(i)} style={{
                 flex:1, background:modeIdx===i?"#00ff78":"transparent",
@@ -164,11 +164,11 @@ function HomeScreen({ onSolo, onDuo, modeIdx, setModeIdx, hardMode, setHardMode 
         </div>
 
         {/* 플레이 선택 */}
-        <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
           <button onClick={onSolo} style={{
             background:"#00ff78", border:"none", borderRadius:"4px",
             color:"#000", fontFamily:"'Courier New',monospace", fontWeight:"bold",
-            fontSize:"14px", letterSpacing:"3px", padding:"16px",
+            fontSize:"13px", letterSpacing:"3px", padding:"13px",
             cursor:"pointer", transition:"opacity 0.15s",
           }}
             onMouseEnter={e=>e.target.style.opacity="0.85"}
@@ -179,7 +179,7 @@ function HomeScreen({ onSolo, onDuo, modeIdx, setModeIdx, hardMode, setHardMode 
             background:"transparent", border:"1px solid #00ff7866",
             borderRadius:"4px", color:"#00ff78",
             fontFamily:"'Courier New',monospace", fontWeight:"bold",
-            fontSize:"14px", letterSpacing:"3px", padding:"16px",
+            fontSize:"13px", letterSpacing:"3px", padding:"13px",
             cursor:"pointer", transition:"all 0.15s",
           }}
             onMouseEnter={e=>{e.target.style.background="#00ff7811"}}
@@ -188,7 +188,7 @@ function HomeScreen({ onSolo, onDuo, modeIdx, setModeIdx, hardMode, setHardMode 
         </div>
 
         {/* 게임 방법 */}
-        <div style={{marginTop:"16px",background:"#0e0e16",border:"1px solid #1e1e2e",borderRadius:"6px",padding:"14px"}}>
+        <div style={{marginTop:"12px",background:"#0e0e16",border:"1px solid #1e1e2e",borderRadius:"6px",padding:"12px"}}>
           <div style={{color:"#999",fontSize:"9px",letterSpacing:"3px",marginBottom:"10px"}}>HOW TO PLAY</div>
 
           <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
