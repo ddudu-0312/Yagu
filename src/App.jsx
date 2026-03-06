@@ -134,7 +134,7 @@ export default function App() {
   return (
     <GameScreen
       key={screen + modeIdx + hardMode + duoSecret}
-      T={T} mode={mode} modeIdx={modeIdx} hardMode={hardMode}
+      T={T} mode={mode} modeIdx={modeIdx} hardMode={hardMode} darkMode={darkMode}
       isSolo={screen === "solo"} duoSecret={duoSecret}
       onHome={goHome} onRematch={() => setScreen(screen === "solo" ? "solo" : "duo-set")}
     />
@@ -151,13 +151,15 @@ function HomeScreen({ T, darkMode, setDarkMode, onSolo, onDuo, modeIdx, setModeI
       overflowY:"auto", overflowX:"hidden",
       fontFamily:"'Courier New',Courier,monospace",
       transition:"background 0.3s",
+      paddingTop:"env(safe-area-inset-top)",
+      paddingBottom:"env(safe-area-inset-bottom)",
     }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         button:active{transform:scale(0.96)}
         input:focus{outline:none}
       `}</style>
-      <div style={{width:"100%",maxWidth:"380px",padding:"16px 20px 32px",margin:"0 auto"}}>
+      <div style={{width:"100%",maxWidth:"380px",padding:"16px max(20px, env(safe-area-inset-right)) 32px max(20px, env(safe-area-inset-left))",margin:"0 auto"}}>
 
         {/* 헤더 */}
         <div style={{textAlign:"center",marginBottom:"14px",position:"relative"}}>
@@ -294,6 +296,10 @@ function SetSecretScreen({ T, mode, input, setInput, shake, show, setShow, error
       position:"fixed", inset:0, background:T.bg,
       display:"flex", alignItems:"center", justifyContent:"center",
       fontFamily:"'Courier New',Courier,monospace", transition:"background 0.3s",
+      paddingTop:"env(safe-area-inset-top)",
+      paddingBottom:"env(safe-area-inset-bottom)",
+      paddingLeft:"env(safe-area-inset-left)",
+      paddingRight:"env(safe-area-inset-right)",
     }}>
       <style>{`
         @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
@@ -359,7 +365,7 @@ function SetSecretScreen({ T, mode, input, setInput, shake, show, setShow, error
 // ────────────────────────────────────────────
 // 게임 화면
 // ────────────────────────────────────────────
-function GameScreen({ T, mode, hardMode, isSolo, duoSecret, onHome, onRematch }) {
+function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, onRematch }) {
   const secretRef = useRef(isSolo ? generateSecret(mode.digits) : duoSecret);
   const secret = secretRef.current;
 
@@ -445,6 +451,10 @@ function GameScreen({ T, mode, hardMode, isSolo, duoSecret, onHome, onRematch })
       display:"flex", alignItems:"center", justifyContent:"center",
       fontFamily:"'Courier New',Courier,monospace", overflow:"hidden",
       transition:"background 0.3s",
+      paddingTop:"env(safe-area-inset-top)",
+      paddingBottom:"env(safe-area-inset-bottom)",
+      paddingLeft:"env(safe-area-inset-left)",
+      paddingRight:"env(safe-area-inset-right)",
     }}>
       <style>{`
         @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
