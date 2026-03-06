@@ -153,13 +153,15 @@ function HomeScreen({ T, darkMode, setDarkMode, onSolo, onDuo, modeIdx, setModeI
       transition:"background 0.3s",
       paddingTop:"env(safe-area-inset-top)",
       paddingBottom:"env(safe-area-inset-bottom)",
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      minHeight:"100vh",
     }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         button:active{transform:scale(0.96)}
         input:focus{outline:none}
       `}</style>
-      <div style={{width:"100%",maxWidth:"380px",padding:"16px max(20px, env(safe-area-inset-right)) 32px max(20px, env(safe-area-inset-left))",margin:"0 auto"}}>
+      <div style={{width:"100%",maxWidth:"380px",padding:"16px max(20px, env(safe-area-inset-right)) 32px max(20px, env(safe-area-inset-left))",margin:"auto"}}>
 
         {/* 헤더 */}
         <div style={{textAlign:"center",marginBottom:"14px",position:"relative"}}>
@@ -286,8 +288,8 @@ function SetSecretScreen({ T, mode, input, setInput, shake, show, setShow, error
   const inputRef = useRef(null);
   useEffect(() => { inputRef.current?.focus(); }, []);
   const handleInput = (e) => {
-    const val = e.target.value.replace(/\D/g, "");
-    if (val.length <= mode.digits) setInput(val);
+    const val = e.target.value.replace(/\D/g, "").slice(0, mode.digits);
+    setInput(val);
   };
   const handleKey = (e) => { if (e.key === "Enter") onConfirm(); };
 
@@ -326,6 +328,9 @@ function SetSecretScreen({ T, mode, input, setInput, shake, show, setShow, error
               onKeyDown={handleKey}
               maxLength={mode.digits}
               placeholder={show ? Array(mode.digits).fill("_").join(" ") : ""}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="off"
               className={shake?"shake-it":""}
               style={{
                 width:"100%", boxSizing:"border-box",
@@ -419,21 +424,28 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
   }, [history]);
 
   const handleInput = (e) => {
-    const val = e.target.value.replace(/\D/g,"");
-    if (val.length <= mode.digits) {
-      setInput(val);
-      if (!timerOn && val.length > 0) setTimerOn(true);
-    }
+    const val = e.target.value.replace(/\D/g,"").slice(0, mode.digits);
+    setInput(val);
+    if (!timerOn && val.length > 0) setTimerOn(true);
+  };
+
+  const [toast, setToast] = useState("");
+  const toastTimer = useRef(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(""), 2000);
   };
 
   const triggerShake = () => { setShake(true); setTimeout(()=>setShake(false),400); };
 
   const handleSubmit = () => {
     if (gameOver) return;
-    if (input.length !== mode.digits) { triggerShake(); return; }
+    if (input.length !== mode.digits) { triggerShake(); showToast(`${mode.digits}자리를 입력하세요`); return; }
     const digits = input.split("");
-    if (new Set(digits).size !== mode.digits) { triggerShake(); return; }
-    if (digits[0]==="0") { triggerShake(); return; }
+    if (new Set(digits).size !== mode.digits) { triggerShake(); showToast("중복된 숫자가 있어요!"); return; }
+    if (digits[0]==="0") { triggerShake(); showToast("첫째 자리는 0이 될 수 없어요"); return; }
     const {strikes,balls} = calcResult(secret,input);
     const tryNum = history.length+1;
     const out = strikes===0&&balls===0;
@@ -445,7 +457,12 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
     if (won||tryNum>=mode.tries) { setGameOver(true); setTimerOn(false); }
   };
 
-  const handleKey = (e) => { if (e.key==="Enter") handleSubmit(); };
+  const handleKey = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
 
   const useHint = () => {
     if (hintUsed||gameOver) return;
@@ -477,8 +494,10 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
       paddingBottom:"env(safe-area-inset-bottom)",
       paddingLeft:"env(safe-area-inset-left)",
       paddingRight:"env(safe-area-inset-right)",
+      display:"flex", justifyContent:"center",
     }}>
       <style>{`
+        @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
         @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
         @keyframes flashGreen{0%{background:rgba(0,200,100,0.18)}100%{background:transparent}}
@@ -495,10 +514,27 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
 
       <div style={{
         width:"100%", maxWidth:"440px", margin:"0 auto",
-        background:T.card, minHeight:"100vh",
+        background:T.card,
         boxShadow:`0 0 60px ${T.shadow}`,
         transition:"background 0.3s",
       }}>
+        {/* Toast */}
+        {toast && (
+          <div style={{
+            position:"fixed", bottom:"90px", left:"50%",
+            transform:"translateX(-50%)",
+            background:"#ff4455", color:"#fff",
+            fontFamily:"'Courier New',monospace",
+            fontSize:"12px", fontWeight:"bold",
+            letterSpacing:"1px",
+            padding:"10px 20px", borderRadius:"20px",
+            boxShadow:"0 4px 20px rgba(255,68,85,0.4)",
+            zIndex:100,
+            animation:"toastIn 0.25s ease",
+            whiteSpace:"nowrap",
+          }}>⚠ {toast}</div>
+        )}
+
         {/* Header */}
         <div style={{
           padding:"10px 14px 8px", borderBottom:`1px solid ${T.borderSub}`,
@@ -658,6 +694,9 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
                 onKeyDown={handleKey}
                 maxLength={mode.digits}
                 placeholder={placeholder}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
                 className={shake?"shake-input":""}
                 style={{
                   flex:1, background:T.inputBg, border:`1px solid ${T.inputBorder}`,
