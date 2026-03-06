@@ -153,15 +153,17 @@ function HomeScreen({ T, darkMode, setDarkMode, onSolo, onDuo, modeIdx, setModeI
       transition:"background 0.3s",
       paddingTop:"env(safe-area-inset-top)",
       paddingBottom:"env(safe-area-inset-bottom)",
+      paddingLeft:"env(safe-area-inset-left)",
+      paddingRight:"env(safe-area-inset-right)",
       display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-      minHeight:"100vh",
+      boxSizing:"border-box",
     }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         button:active{transform:scale(0.96)}
         input:focus{outline:none}
       `}</style>
-      <div style={{width:"100%",maxWidth:"380px",padding:"16px max(20px, env(safe-area-inset-right)) 32px max(20px, env(safe-area-inset-left))",margin:"auto"}}>
+      <div style={{width:"100%",maxWidth:"380px",padding:"16px 20px 32px",margin:"auto"}}>
 
         {/* 헤더 */}
         <div style={{textAlign:"center",marginBottom:"14px",position:"relative"}}>
@@ -490,11 +492,10 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
       overflowY:"auto", overflowX:"hidden",
       fontFamily:"'Courier New',Courier,monospace",
       transition:"background 0.3s",
+      display:"flex", justifyContent:"center",
+      boxSizing:"border-box",
       paddingTop:"env(safe-area-inset-top)",
       paddingBottom:"env(safe-area-inset-bottom)",
-      paddingLeft:"env(safe-area-inset-left)",
-      paddingRight:"env(safe-area-inset-right)",
-      display:"flex", justifyContent:"center",
     }}>
       <style>{`
         @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
@@ -513,10 +514,13 @@ function GameScreen({ T, mode, hardMode, darkMode, isSolo, duoSecret, onHome, on
       `}</style>
 
       <div style={{
-        width:"100%", maxWidth:"440px", margin:"0 auto",
+        width:"100%", maxWidth:"440px",
         background:T.card,
         boxShadow:`0 0 60px ${T.shadow}`,
         transition:"background 0.3s",
+        paddingLeft:"env(safe-area-inset-left)",
+        paddingRight:"env(safe-area-inset-right)",
+        boxSizing:"border-box",
       }}>
         {/* Toast */}
         {toast && (
